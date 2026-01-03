@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:18.1
+    container_name: qozzbank-db
+    environment:
+      POSTGRES_DB: qozzbank
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+
