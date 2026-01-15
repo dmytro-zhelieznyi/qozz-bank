@@ -11,7 +11,7 @@
 * **Documentation**: SpringDoc OpenAPI (Swagger)
 ---
 
-## 📊 Monitoring & Management (Spring Boot Actuator)
+## 📊 Monitoring & Management (Spring Boot Actuator / Prometheus / Grafana)
 The project is equipped with powerful monitoring tools available via the `/actuator` base path.
 
 ### Core Endpoints:
@@ -27,6 +27,45 @@ The project is equipped with powerful monitoring tools available via the `/actua
 >      -H "Content-Type: application/json" \
 >      -d '{"configuredLevel":"DEBUG"}'
 > ```
+
+This project includes a pre-configured monitoring stack to observe application performance and database behavior under heavy load.
+
+### Component Overview
+* **Prometheus**: A time-series database that pulls (scrapes) metrics from the Spring Boot `/actuator/prometheus` endpoint every 5 seconds.
+* **Grafana**: A visualization platform that connects to Prometheus to display real-time dashboards (JVM health, HikariCP pool status, HTTP throughput).
+
+### 🚀 Getting Started
+
+1.  **Start the infrastructure**:
+    Run the following command in the root directory:
+    ```bash
+    docker-compose up -d
+    ```
+
+2.  **Access Grafana**:
+    * **URL**: `http://localhost:3000`
+    * **Login**: `admin`
+    * **Password**: `admin` (you may be asked to change it on first login).
+
+3.  **Connect Prometheus to Grafana**:
+    * Go to **Connections** -> **Data Sources** in the left sidebar.
+    * Click **Add data source** and select **Prometheus**.
+    * Set the URL to: `http://prometheus:9090` (this works because they share the same Docker network).
+    * Scroll down and click **Save & Test**.
+
+4.  **Import Dashboard**:
+    * Go to **Dashboards** -> **New** -> **Import**.
+    * Enter ID `4701` (JVM Micrometer) or `11378`.
+    * Select your **Prometheus** data source and click **Import**.
+
+### 🛠 Tech Stack Details
+| Service | Internal Port | External Port | Description              |
+| :--- | :--- | :--- |:-------------------------|
+| **App** | 8080 | 8080 | Spring Boot Bank Service |
+| **PostgreSQL** | 5432 | 5432 | Database                 |
+| **Prometheus** | 9090 | 9090 | Metrics Aggregator       |
+| **Grafana** | 3000 | 3000 | Dashboard UI             |
+
 ---
 
 ## 📖 API Documentation (OpenAPI / Swagger)
