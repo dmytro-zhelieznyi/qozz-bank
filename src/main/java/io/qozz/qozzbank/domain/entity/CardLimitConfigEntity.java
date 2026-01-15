@@ -1,4 +1,4 @@
-package io.qozz.qozzbank.domain;
+package io.qozz.qozzbank.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,4 +1,4 @@
-package io.qozz.qozzbank.enumeration;
+package io.qozz.qozzbank.domain.enumeration;
 
 /**
  * CardLimitType defines supported spending and withdrawal limits

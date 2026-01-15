@@ -1,4 +1,4 @@
-package io.qozz.qozzbank.enumeration;
+package io.qozz.qozzbank.domain.enumeration;
 
 import lombok.Getter;
 
