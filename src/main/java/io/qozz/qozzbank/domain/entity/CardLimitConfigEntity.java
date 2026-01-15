@@ -1,5 +1,6 @@
 package io.qozz.qozzbank.domain.entity;
 
+import io.qozz.qozzbank.domain.enumeration.CardLimitType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,7 +39,7 @@ public class CardLimitConfigEntity {
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "limit_type", nullable = false, length = 50)
-    private String limitType;
+    private CardLimitType limitType;
 
     @Column(name = "max_amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal maxAmount;

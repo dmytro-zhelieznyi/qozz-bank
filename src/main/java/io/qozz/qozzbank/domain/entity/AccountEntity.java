@@ -1,5 +1,6 @@
 package io.qozz.qozzbank.domain.entity;
 
+import io.qozz.qozzbank.domain.enumeration.AccountStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,7 +47,7 @@ public class AccountEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    private AccountStatus status;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

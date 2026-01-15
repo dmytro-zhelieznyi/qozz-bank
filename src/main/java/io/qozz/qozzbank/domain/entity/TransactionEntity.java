@@ -1,5 +1,6 @@
 package io.qozz.qozzbank.domain.entity;
 
+import io.qozz.qozzbank.domain.enumeration.TransactionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -52,7 +53,7 @@ public class TransactionEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    private TransactionStatus status;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
