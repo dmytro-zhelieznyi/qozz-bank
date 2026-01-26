@@ -155,8 +155,7 @@ components:
         - correlationId
       properties:
         code:
-          type: string
-          example: INSUFFICIENT_FUNDS
+          $ref: '#/components/schemas/ErrorCode'
         message:
           type: string
           example: Not enough balance on source account
@@ -164,3 +163,11 @@ components:
           type: string
           format: uuid
           example: "123e4567-e89b-12d3-a456-426614174000"
+
+    ErrorCode:
+      type: string
+      description: |
+        Standardized error codes for programmatic handling:
+      enum:
+        - bad_request.missing_header
+        - bad_request.meida_type_not_supported

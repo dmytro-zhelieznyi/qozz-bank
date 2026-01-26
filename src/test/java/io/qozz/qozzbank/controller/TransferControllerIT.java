@@ -9,11 +9,11 @@ import io.qozz.qozzbank.domain.enumeration.*;
 import io.qozz.qozzbank.repository.AccountRepository;
 import io.qozz.qozzbank.repository.TransactionRepository;
 import io.qozz.qozzbank.repository.UserRepository;
-import io.qozz.qozzbank.service.dto.TransferResult;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.openapitools.model.ErrorCode;
+import org.openapitools.model.ErrorResponse;
 import org.openapitools.model.TransferRequest;
 import org.openapitools.model.TransferResponse;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -28,6 +28,8 @@ import org.springframework.web.context.WebApplicationContext;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @ImportTestcontainers({PostgresContainerConfig.class, RabbitContainerConfig.class})
@@ -39,8 +41,6 @@ public class TransferControllerIT {
 
     private static final String IBAN_USD_1 = "US01QOZZ1000000000000001";
     private static final String IBAN_USD_2 = "US01QOZZ1000000000000002";
-    private static final String IBAN_USD_3 = "US01QOZZ1000000000000003";
-    private static final String IBAN_USD_4 = "US01QOZZ1000000000000004";
 
     private static final String CURRENCY_USD = "USD";
     private static final BigDecimal BALANCE_100_000 = new BigDecimal("100000.0000");
@@ -99,9 +99,45 @@ public class TransferControllerIT {
                 .expectBody(TransferResponse.class)
                 .consumeWith(body -> {
                     TransferResponse response = body.getResponseBody();
-                    Assertions.assertEquals(TransactionStatus.PENDING, TransactionStatus.fromValue(response.getStatus()));
+                    assertEquals(TransactionStatus.PENDING, TransactionStatus.fromValue(response.getStatus()));
                 });
 
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/transfers - missed header error")
+    void handleErrorMissedHeader() {
+        restTestClient.post()
+                .uri("/api/v1/transfers")
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .body(new Object())
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectHeader()
+                .contentType(MediaType.APPLICATION_JSON)
+                .expectBody(ErrorResponse.class)
+                .consumeWith(body -> {
+                    ErrorResponse response = body.getResponseBody();
+                    assertEquals(ErrorCode.BAD_REQUEST_MISSING_HEADER, response.getCode());
+                });
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/transfers - media type not supported error")
+    void handleErrorNotSupportedMediaType() {
+        restTestClient.post()
+                .uri("/api/v1/transfers")
+                .header("X-Correlation-ID", CORRELATION_ID.toString())
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectHeader()
+                .contentType(MediaType.APPLICATION_JSON)
+                .expectBody(ErrorResponse.class)
+                .consumeWith(body -> {
+                    ErrorResponse response = body.getResponseBody();
+                    assertEquals(ErrorCode.BAD_REQUEST_MEIDA_TYPE_NOT_SUPPORTED, response.getCode());
+                });
     }
 
     private UserEntity createUserEntity(String firstName, String lastName, UserStatus status) {
