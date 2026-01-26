@@ -8,12 +8,12 @@ import lombok.Getter;
  */
 @Getter
 public enum AccountType {
-    CHECKING("Checking"),     // Regular transaction account for daily use.
-    SAVINGS("Savings"),       // Interest-bearing account for wealth accumulation.
-    DEPOSIT("Deposit"),       // Term deposit account with restricted access.
-    CREDIT("Credit"),         // Line of credit or credit card account.
-    INVESTMENT("Investment"), // Brokerage or wealth management account.
-    LOAN("Loan");             // Liability account representing a debt.
+    CHECKING("Checking"),       // Regular transaction account for daily use.
+    SAVINGS("Savings"),         // Interest-bearing account for wealth accumulation.
+    DEPOSIT("Deposit"),         // Term deposit account with restricted access.
+    CREDIT("Credit"),           // Line of credit or credit card account.
+    INVESTMENT("Investment"),   // Brokerage or wealth management account.
+    LOAN("Loan");               // Liability account representing a debt.
 
     private final String value;
 

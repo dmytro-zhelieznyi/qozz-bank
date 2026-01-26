@@ -8,10 +8,10 @@ package io.qozz.qozzbank.domain.enumeration;
  * - card_limit_counters
  */
 public enum CardLimitType {
-    SINGLE_TRANSACTION("Single transaction"),     // Maximum allowed amount for a single transaction.
-    DAILY_AMOUNT("Daily amount"),                 // Maximum total amount allowed per day across all transactions.
-    MONTHLY_AMOUNT("Monthly amount"),             // Maximum total amount allowed per month across all transactions.
-    ATM_WITHDRAWAL_DAILY("ATM daily withdrawal"); // Maximum total amount allowed per day for ATM cash withdrawals.
+    SINGLE_TRANSACTION("Single transaction"),       // Maximum allowed amount for a single transaction.
+    DAILY_AMOUNT("Daily amount"),                   // Maximum total amount allowed per day across all transactions.
+    MONTHLY_AMOUNT("Monthly amount"),               // Maximum total amount allowed per month across all transactions.
+    ATM_WITHDRAWAL_DAILY("ATM daily withdrawal");   // Maximum total amount allowed per day for ATM cash withdrawals.
 
     private final String value;
 

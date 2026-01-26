@@ -8,13 +8,13 @@ import lombok.Getter;
  */
 @Getter
 public enum UserStatus {
-    ACTIVE("Active"),                             // User can fully use the system.
-    INACTIVE("Inactive"),                         // Temporarily inactive (e.g., long inactivity).
-    BLOCKED("Blocked"),                           // Blocked due to security or fraud concerns.
-    PENDING_VERIFICATION("Pending Verification"), // Registered but KYC or email not completed.
-    SUSPENDED("Suspended"),                       // Temporarily frozen (e.g., suspicious activity).
-    CLOSED("Closed"),                             // Account permanently closed by user or bank.
-    LOCKED("Locked");                             // Temporarily locked (e.g., after failed login attempts).
+    ACTIVE("Active"),                               // User can fully use the system.
+    INACTIVE("Inactive"),                           // Temporarily inactive (e.g., long inactivity).
+    BLOCKED("Blocked"),                             // Blocked due to security or fraud concerns.
+    PENDING_VERIFICATION("Pending Verification"),   // Registered but KYC or email not completed.
+    SUSPENDED("Suspended"),                         // Temporarily frozen (e.g., suspicious activity).
+    CLOSED("Closed"),                               // Account permanently closed by user or bank.
+    LOCKED("Locked");                               // Temporarily locked (e.g., after failed login attempts).
 
     private final String value;
 

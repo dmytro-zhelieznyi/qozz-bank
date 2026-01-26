@@ -9,6 +9,17 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
+@NamedEntityGraph(
+        name = "Card.account.user",
+        attributeNodes = @NamedAttributeNode(
+                value = "account",
+                subgraph = "account-subgraph"
+        ),
+        subgraphs = @NamedSubgraph(
+                name = "account-subgraph",
+                attributeNodes = @NamedAttributeNode("user")
+        )
+)
 @Table(
         name = "cards",
         indexes = {

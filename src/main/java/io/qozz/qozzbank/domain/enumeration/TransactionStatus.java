@@ -8,11 +8,11 @@ import lombok.Getter;
  */
 @Getter
 public enum TransactionStatus {
-    PENDING("Pending"),          // Transaction created but not yet processed.
-    PROCESSING("Processing"),    // Transaction is being executed / validated.
-    COMPLETED("Completed"),      // Transaction successfully completed.
-    FAILED("Failed"),            // Transaction failed due to error or rejection.
-    CANCELED("Canceled");        // Transaction canceled by user or system.
+    PENDING("Pending"),         // Transaction created but not yet processed.
+    PROCESSING("Processing"),   // Transaction is being executed / validated.
+    COMPLETED("Completed"),     // Transaction successfully completed.
+    FAILED("Failed"),           // Transaction failed due to error or rejection.
+    CANCELED("Canceled");       // Transaction canceled by user or system.
 
     private final String value;
 

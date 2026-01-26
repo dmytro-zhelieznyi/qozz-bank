@@ -10,6 +10,19 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
+@NamedEntityGraph(
+        name = "Transaction.full-details",
+        attributeNodes = {
+                @NamedAttributeNode(value = "account", subgraph = "account-user-sub"),
+                @NamedAttributeNode(value = "relatedCard")
+        },
+        subgraphs = {
+                @NamedSubgraph(
+                        name = "account-user-sub",
+                        attributeNodes = @NamedAttributeNode("user")
+                )
+        }
+)
 @Table(
         name = "transactions",
         indexes = {

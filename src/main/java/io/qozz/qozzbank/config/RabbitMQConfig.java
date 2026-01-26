@@ -14,19 +14,19 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY_TRANSFER_CREATED = "key.transfer.created";
 
     @Bean
-    @Profile({"local", "test"})
+    @Profile({"local", "dev"})
     public DirectExchange localExchange() {
         return new DirectExchange(EXCHANGE_TRANSFER);
     }
 
     @Bean
-    @Profile({"local", "test"})
+    @Profile({"local", "dev"})
     public Queue localQueue() {
         return new Queue(QUEUE_TRANSFER, true, false, false);
     }
 
     @Bean
-    @Profile({"local", "test"})
+    @Profile({"local", "dev"})
     public Binding localBinding(Queue localQueue, DirectExchange localExchange) {
         return BindingBuilder.bind(localQueue)
                 .to(localExchange)

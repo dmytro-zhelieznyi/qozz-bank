@@ -8,10 +8,10 @@ import lombok.Getter;
  */
 @Getter
 public enum AccountStatus {
-    ACTIVE("Active"),     // Account is fully operational.
-    INACTIVE("Inactive"), // Temporarily inactive, cannot perform transactions.
-    FROZEN("Frozen"),     // Blocked due to suspicious activity or compliance.
-    CLOSED("Closed");     // Account permanently closed.
+    ACTIVE("Active"),       // Account is fully operational.
+    INACTIVE("Inactive"),   // Temporarily inactive, cannot perform transactions.
+    FROZEN("Frozen"),       // Blocked due to suspicious activity or compliance.
+    CLOSED("Closed");       // Account permanently closed.
 
     private final String value;
 

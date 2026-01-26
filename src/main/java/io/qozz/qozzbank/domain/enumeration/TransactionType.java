@@ -8,11 +8,11 @@ import lombok.Getter;
  */
 @Getter
 public enum TransactionType {
-    TRANSFER("Transfer"),         // Internal money transfer between accounts.
-    DEPOSIT("Deposit"),           // Money deposited to the account.
-    WITHDRAWAL("Withdrawal"),     // Money withdrawn from the account.
-    CARD_PAYMENT("Card Payment"), // Payment using a card.
-    FEE("Fee");                   // Commission or service fee.
+    TRANSFER("Transfer"),           // Internal money transfer between accounts.
+    DEPOSIT("Deposit"),             // Money deposited to the account.
+    WITHDRAWAL("Withdrawal"),       // Money withdrawn from the account.
+    CARD_PAYMENT("Card Payment"),   // Payment using a card.
+    FEE("Fee");                     // Commission or service fee.
 
     private final String value;
 
