@@ -1,6 +1,7 @@
 package io.qozz.qozzbank.domain.entity;
 
 import io.qozz.qozzbank.domain.enumeration.TransactionStatus;
+import io.qozz.qozzbank.domain.enumeration.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,8 +49,9 @@ public class TransactionEntity {
     @Column(name = "amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 50)
-    private String type;
+    private TransactionType type;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

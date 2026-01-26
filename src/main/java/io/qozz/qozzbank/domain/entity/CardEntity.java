@@ -46,6 +46,7 @@ public class CardEntity {
     @Column(name = "status", nullable = false, length = 20)
     private CardStatus status;
 
+    @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
     @PrePersist

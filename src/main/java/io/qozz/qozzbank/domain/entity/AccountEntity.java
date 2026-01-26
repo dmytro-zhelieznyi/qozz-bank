@@ -1,6 +1,7 @@
 package io.qozz.qozzbank.domain.entity;
 
 import io.qozz.qozzbank.domain.enumeration.AccountStatus;
+import io.qozz.qozzbank.domain.enumeration.AccountType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,8 +43,13 @@ public class AccountEntity {
     @Column(name = "balance", nullable = false, precision = 19, scale = 4)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Builder.Default
+    @Column(name = "available_balance", nullable = false, precision = 19, scale = 4)
+    private BigDecimal availableBalance = BigDecimal.ZERO;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "account_type", nullable = false, length = 20)
-    private String accountType;
+    private AccountType accountType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

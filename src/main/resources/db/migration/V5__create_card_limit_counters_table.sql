@@ -12,4 +12,4 @@ CREATE TABLE card_limit_counters
     CONSTRAINT uk_card_limit_counters_type UNIQUE (card_id, limit_type),
     CONSTRAINT fk_limit_counters_card_id FOREIGN KEY (card_id) REFERENCES cards (id)
 );
-CREATE INDEX idx_card_limit_counters_card_id ON card_limit_configs (card_id);
+CREATE INDEX idx_card_limit_counters_card_id ON card_limit_counters (card_id);

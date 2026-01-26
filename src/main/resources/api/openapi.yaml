@@ -1,8 +1,9 @@
 openapi: 3.1.1
+
 info:
   title: QozzBank API
   description: >
-    Core Banking System API. 
+    Core Banking System API.
     This document defines the contract between the server and clients.
   version: 1.0.0
 
@@ -13,6 +14,8 @@ servers:
 tags:
   - name: home
     description: General service information
+  - name: transactions
+    description: Money transfers and financial transactions
 
 paths:
   /:
@@ -30,12 +33,134 @@ paths:
               schema:
                 $ref: '#/components/schemas/HomeInfoResponse'
 
+  /api/v1/transfers:
+    post:
+      tags:
+        - transactions
+      summary: Execute money transfer
+      description: Initiates a money transfer between two accounts.
+      operationId: createTransfer
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '201':
+          description: Transfer accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        '400':
+          description: Invalid request format
+        '409':
+          description: Conflict (Optimistic lock failure)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Business validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
+  parameters:
+    CorrelationId:
+      name: X-Correlation-ID
+      in: header
+      description: Unique identifier for distributed tracing
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"
+
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: Ensures idempotent processing of transfer requests
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "9f8c7a6b-1234-4cde-9876-abcdef123456"
+
   schemas:
     HomeInfoResponse:
       type: object
-      required: [ message ]
+      required:
+        - message
       properties:
         message:
           type: string
           example: "Welcome to QozzBank API"
+
+    TransferRequest:
+      type: object
+      required:
+        - fromAccountId
+        - toAccountId
+        - amount
+      properties:
+        fromAccountId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        toAccountId:
+          type: string
+          format: uuid
+          example: "671e8400-e29b-41d4-a716-446655440001"
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+          example: 100.50
+        description:
+          type: string
+          maxLength: 255
+          example: "Dinner payment"
+
+    TransferResponse:
+      type: object
+      required:
+        - operationId
+        - status
+        - createdAt
+      properties:
+        operationId:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        status:
+          type: string
+          example: PENDING
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-01-18T12:34:56Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - correlationId
+      properties:
+        code:
+          type: string
+          example: INSUFFICIENT_FUNDS
+        message:
+          type: string
+          example: Not enough balance on source account
+        correlationId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
