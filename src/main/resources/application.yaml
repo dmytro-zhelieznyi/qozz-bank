@@ -8,6 +8,21 @@ spring:
   threads:
     virtual:
       enabled: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/qozzbank
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
     enabled: true
@@ -15,12 +30,11 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
 
-  jpa:
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 
 # Spring Boot Actuator: Internal monitoring and system status
 management:
@@ -53,10 +67,17 @@ management:
     flyway:
       enabled: true
 
-
 # Custom application info for /actuator/info
 info:
   app:
     name: ${spring.application.name}
     description: "High-performance Core Banking System"
     version: "1.0.0"
+
+logging:
+  level:
+    root: INFO
+    io.qozz.qozzbank: INFO # Поправил пакет на твой io.qozz
+    org.hibernate.SQL: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%25.25thread] %logger{36}: %msg%n"
