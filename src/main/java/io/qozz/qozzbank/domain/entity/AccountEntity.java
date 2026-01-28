@@ -9,6 +9,10 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@NamedEntityGraph(
+        name = "Account.user",
+        attributeNodes = @NamedAttributeNode("user")
+)
 @Entity
 @Table(name = "accounts",
         indexes = {

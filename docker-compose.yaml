@@ -1,6 +1,30 @@
 services:
+  qozzbank-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qozzbank-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - qozzbank-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
   db:
-    image: postgres:18.1
+    image: postgres:17.2
     container_name: qozzbank-db
     environment:
       POSTGRES_DB: qozzbank
@@ -8,6 +32,15 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - qozzbank-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d qozzbank" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:4.2.2-management
@@ -18,15 +51,53 @@ services:
     ports:
       - "5672:5672"      # AMQP port
       - "15672:15672"    # Web management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - qozzbank-network
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q check_running" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   prometheus:
     image: prom/prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     ports:
       - "9090:9090"
+    networks:
+      - qozzbank-network
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   grafana:
     image: grafana/grafana
     ports:
       - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - qozzbank-network
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  qozzbank-network:
+    name: qozzbank-network
+    driver: bridge

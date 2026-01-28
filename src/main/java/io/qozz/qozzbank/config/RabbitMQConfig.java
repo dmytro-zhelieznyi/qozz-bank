@@ -29,4 +29,9 @@ public class RabbitMQConfig {
                 .to(localExchange)
                 .with(ROUTING_KEY_TRANSFER_CREATED);
     }
+
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new JacksonJsonMessageConverter();
+    }
 }

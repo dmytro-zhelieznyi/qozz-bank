@@ -15,6 +15,6 @@ spring:
 
 logging:
   level:
-    io.qozz.qozzbank: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.springframework.transaction.interceptor: TRACE
+    io.qozz.qozzbank: INFO
+    org.hibernate.SQL: INFO
+    org.springframework.transaction.interceptor: INFO

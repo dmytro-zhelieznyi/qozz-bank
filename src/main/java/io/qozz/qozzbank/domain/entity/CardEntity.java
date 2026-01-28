@@ -8,18 +8,15 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Entity
 @NamedEntityGraph(
-        name = "Card.account.user",
-        attributeNodes = @NamedAttributeNode(
-                value = "account",
-                subgraph = "account-subgraph"
-        ),
+        name = "Card.account",
+        attributeNodes = @NamedAttributeNode(value = "account", subgraph = "account-user"),
         subgraphs = @NamedSubgraph(
-                name = "account-subgraph",
+                name = "account-user",
                 attributeNodes = @NamedAttributeNode("user")
         )
 )
+@Entity
 @Table(
         name = "cards",
         indexes = {
