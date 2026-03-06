@@ -4,24 +4,32 @@ info:
   title: QozzBank API
   description: >
     Core Banking System API.
-    This document defines the contract between the server and clients.
+    All endpoints except the root '/' require a valid JWT Bearer token from Supabase Auth.
   version: 1.0.0
 
 servers:
   - url: http://localhost:8080
     description: Local development server
 
+# Global security: Applies Authorization header to all endpoints by default
+security:
+  - BearerAuth: []
+
 tags:
   - name: home
     description: General service information
+  - name: users
+    description: User profile management
+  - name: accounts
+    description: Bank account management
   - name: transactions
     description: Money transfers and financial transactions
 
 paths:
   /:
     get:
-      tags:
-        - home
+      tags: [home]
+      security: []
       summary: Get service summary
       description: Returns basic metadata about the QozzBank service.
       operationId: getHomeInfo
@@ -30,15 +38,105 @@ paths:
           description: OK
           content:
             application/json:
+              schema: { $ref: '#/components/schemas/HomeInfoResponse' }
+
+  /api/v1/users:
+    post:
+      tags: [users]
+      summary: Create new user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserRequest' }
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '400': { description: "Invalid input" }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+
+  /api/v1/users/{id}:
+    get:
+      tags: [users]
+      summary: Get user by authId
+      operationId: getUserByAuthId
+      parameters:
+        - $ref: '#/components/parameters/AuthIdPath'
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '404': { description: "User not found" }
+
+  /api/v1/accounts:
+    post:
+      tags: [accounts]
+      summary: Create new bank account
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountRequest' }
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountResponse' }
+        '400': { description: "Invalid input data" }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '404': { description: "User not found" }
+
+  /api/v1/accounts/user/{id}:
+    get:
+      tags: [accounts]
+      summary: Get accounts by authId
+      operationId: getAccountsByAuthId
+      parameters:
+        - $ref: '#/components/parameters/AuthIdPath'
+      responses:
+        '200':
+          description: List of accounts retrieved successfully
+          content:
+            application/json:
               schema:
-                $ref: '#/components/schemas/HomeInfoResponse'
+                type: array
+                items: { $ref: '#/components/schemas/AccountResponse' }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '404': { description: "User not found" }
+
+  /api/v1/accounts/{iban}:
+    get:
+      tags: [accounts]
+      summary: Get account by IBAN
+      operationId: getAccountByIban
+      parameters:
+        - $ref: '#/components/parameters/IbanPath'
+      responses:
+        '200':
+          description: Account found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountResponse' }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
 
   /api/v1/transfers:
     post:
-      tags:
-        - transactions
+      tags: [transactions]
       summary: Execute money transfer
-      description: Initiates a money transfer between two accounts.
       operationId: createTransfer
       parameters:
         - $ref: '#/components/parameters/CorrelationId'
@@ -47,127 +145,150 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/TransferRequest'
+            schema: { $ref: '#/components/schemas/TransferRequest' }
       responses:
         '201':
           description: Transfer accepted
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/TransferResponse'
-        '400':
-          description: Invalid request format
+              schema: { $ref: '#/components/schemas/TransferResponse' }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
         '409':
           description: Conflict (Optimistic lock failure)
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
         '422':
           description: Business validation failed
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Enter your JWT token in the format: Bearer <token>.
+        Example: "Bearer eyJhbGciOiJIUzI1Ni..."
+
+  responses:
+    UnauthorizedError:
+      description: Authentication failed. Missing or invalid Bearer token.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
   parameters:
+    AuthIdPath:
+      name: id
+      in: path
+      required: true
+      description: The UUID from Supabase Auth
+      schema: { type: string, format: uuid, example: "550e8400-e29b-41d4-a716-446655440000" }
+
+    IbanPath:
+      name: iban
+      in: path
+      required: true
+      description: The International Bank Account Number
+      schema: { type: string, example: "DE12345678901234567890" }
+
     CorrelationId:
       name: X-Correlation-ID
       in: header
-      description: Unique identifier for distributed tracing
       required: true
-      schema:
-        type: string
-        format: uuid
-        example: "123e4567-e89b-12d3-a456-426614174000"
+      description: Unique identifier for distributed tracing
+      schema: { type: string, format: uuid, example: "123e4567-e89b-12d3-a456-426614174000" }
 
     IdempotencyKey:
       name: Idempotency-Key
       in: header
-      description: Ensures idempotent processing of transfer requests
       required: true
-      schema:
-        type: string
-        format: uuid
-        example: "9f8c7a6b-1234-4cde-9876-abcdef123456"
+      description: Ensures idempotent processing of transfers
+      schema: { type: string, format: uuid, example: "9f8c7a6b-1234-4cde-9876-abcdef123456" }
 
   schemas:
     HomeInfoResponse:
       type: object
-      required:
-        - message
+      required: [message]
       properties:
-        message:
-          type: string
-          example: "Welcome to QozzBank API"
+        message: { type: string, example: "Welcome to QozzBank API" }
+
+    UserRequest:
+      type: object
+      required: [authId, firstName, lastName, email]
+      properties:
+        authId: { type: string, format: uuid, description: "Supabase Auth ID" }
+        firstName: { type: string, example: "Darth" }
+        lastName: { type: string, example: "Vader" }
+        email: { type: string, format: email, example: "darth.vader@qozz.io" }
+
+    UserResponse:
+      type: object
+      required: [authId, firstName, lastName, email, status, createdAt]
+      properties:
+        authId: { type: string, format: uuid }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string }
+        status: { type: string, example: "ACTIVE" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AccountRequest:
+      type: object
+      required: [authId, accountType, currency]
+      properties:
+        authId: { type: string, format: uuid }
+        accountType: { type: string, enum: [Checking, Savings, Deposit, Credit, Investment, Loan] }
+        currency: { type: string, minLength: 3, maxLength: 3, example: "USD" }
+
+    AccountResponse:
+      type: object
+      required: [authId, iban, currency, balance, availableBalance, accountType, status, createdAt]
+      properties:
+        authId: { type: string, format: uuid }
+        iban: { type: string, example: "DE12345678901234567890" }
+        currency: { type: string, example: "EUR" }
+        balance: { type: number, format: decimal, example: 1250.50 }
+        availableBalance: { type: number, format: decimal, example: 1200.00 }
+        accountType: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
 
     TransferRequest:
       type: object
-      required:
-        - fromAccountId
-        - toAccountId
-        - amount
+      required: [fromIban, toIban, amount]
       properties:
-        fromAccountId:
-          type: string
-          format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
-        toAccountId:
-          type: string
-          format: uuid
-          example: "671e8400-e29b-41d4-a716-446655440001"
-        amount:
-          type: number
-          format: decimal
-          minimum: 0.01
-          example: 100.50
-        description:
-          type: string
-          maxLength: 255
-          example: "Dinner payment"
+        fromIban: { type: string, example: "DE12345678901234567890" }
+        toIban: { type: string, example: "DE09876543210987654321" }
+        amount: { type: number, format: decimal, minimum: 0.01, example: 100.50 }
+        description: { type: string, maxLength: 255, example: "Dinner payment" }
 
     TransferResponse:
       type: object
-      required:
-        - operationId
-        - status
-        - createdAt
+      required: [operationId, status, createdAt]
       properties:
-        operationId:
-          type: string
-          format: uuid
-          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-        status:
-          type: string
-          example: PENDING
-        createdAt:
-          type: string
-          format: date-time
-          example: "2026-01-18T12:34:56Z"
+        operationId: { type: string, format: uuid }
+        status: { type: string, example: "PENDING" }
+        createdAt: { type: string, format: date-time }
 
     ErrorResponse:
       type: object
-      required:
-        - code
-        - message
-        - correlationId
+      required: [code, message, correlationId]
       properties:
-        code:
-          $ref: '#/components/schemas/ErrorCode'
-        message:
-          type: string
-          example: Not enough balance on source account
-        correlationId:
-          type: string
-          format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
+        code: { $ref: '#/components/schemas/ErrorCode' }
+        message: { type: string, example: "Insufficient funds" }
+        correlationId: { type: string, format: uuid }
 
     ErrorCode:
       type: string
-      description: |
-        Standardized error codes for programmatic handling:
       enum:
         - bad_request.missing_header
-        - bad_request.meida_type_not_supported
+        - bad_request.media_type_not_supported
+        - unauthorized.invalid_token
+        - business.insufficient_funds

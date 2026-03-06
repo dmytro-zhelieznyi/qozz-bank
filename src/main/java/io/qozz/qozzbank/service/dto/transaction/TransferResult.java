@@ -1,4 +1,4 @@
-package io.qozz.qozzbank.service.dto;
+package io.qozz.qozzbank.service.dto.transaction;
 
 
 import io.qozz.qozzbank.domain.enumeration.TransactionStatus;

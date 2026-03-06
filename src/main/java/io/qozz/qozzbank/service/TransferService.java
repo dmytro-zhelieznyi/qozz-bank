@@ -7,7 +7,7 @@ import io.qozz.qozzbank.domain.enumeration.TransactionType;
 import io.qozz.qozzbank.messaging.event.TransferCreatedEvent;
 import io.qozz.qozzbank.repository.AccountRepository;
 import io.qozz.qozzbank.repository.TransactionRepository;
-import io.qozz.qozzbank.service.dto.TransferResult;
+import io.qozz.qozzbank.service.dto.transaction.TransferResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,17 +35,17 @@ public class TransferService {
             @Valid TransferRequest request
     ) {
         log.info("[{}] [SERVICE_START] Looking up accounts for transfer. From: [{}], To: [{}]",
-                correlationId, request.getFromAccountId(), request.getToAccountId());
+                correlationId, request.getFromIban(), request.getToIban());
 
-        AccountEntity fromAccount = accountRepository.findByIdWithPessimisticLock(request.getFromAccountId())
+        AccountEntity fromAccount = accountRepository.findByIbanWithPessimisticLock(request.getFromIban())
                 .orElseThrow(() -> {
-                    log.error("[{}] [SERVICE_ERROR] Source account not found: [{}]", correlationId, request.getFromAccountId());
+                    log.error("[{}] [SERVICE_ERROR] Source account not found: [{}]", correlationId, request.getFromIban());
                     return new RuntimeException("Source account not found");
                 });
 
-        AccountEntity toAccount = accountRepository.findById(request.getToAccountId())
+        AccountEntity toAccount = accountRepository.findByIban(request.getToIban())
                 .orElseThrow(() -> {
-                    log.error("[{}] [SERVICE_ERROR] Destination account not found: [{}]", correlationId, request.getToAccountId());
+                    log.error("[{}] [SERVICE_ERROR] Destination account not found: [{}]", correlationId, request.getToIban());
                     return new RuntimeException("Destination account not found");
                 });
 

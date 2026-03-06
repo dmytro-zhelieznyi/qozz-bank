@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handle(HttpMediaTypeNotSupportedException e) {
         log.error("Content type is not supported: ", e);
-        ErrorResponse code = new ErrorResponse(ErrorCode.BAD_REQUEST_MEIDA_TYPE_NOT_SUPPORTED, e.getMessage(), UUID.randomUUID());
+        ErrorResponse code = new ErrorResponse(ErrorCode.BAD_REQUEST_MEDIA_TYPE_NOT_SUPPORTED, e.getMessage(), UUID.randomUUID());
         return ResponseEntity.badRequest().body(code);
     }
 

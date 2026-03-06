@@ -1,7 +1,7 @@
 package io.qozz.qozzbank.controller;
 
 import io.qozz.qozzbank.service.TransferService;
-import io.qozz.qozzbank.service.dto.TransferResult;
+import io.qozz.qozzbank.service.dto.transaction.TransferResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.api.TransactionsApi;
@@ -25,8 +25,8 @@ public class TransferController implements TransactionsApi {
             UUID idempotencyKey,
             TransferRequest request
     ) {
-        log.info("[{}] [TRANSFER_START] From acc: [{}], Amount: [{}],  To acc: [{}]",
-                correlationId, request.getFromAccountId(), request.getAmount(), request.getToAccountId());
+        log.info("[{}] [TRANSFER_START] From Iban: [{}], Amount: [{}],  To Iban: [{}]",
+                correlationId, request.getFromIban(), request.getAmount(), request.getFromIban());
 
         TransferResult result = transferService.createTransfer(
                 correlationId,

@@ -55,7 +55,7 @@ public class TransferEventListener {
                 .sorted(Comparator.comparing(t -> t.getAccount().getId()))
                 .forEach(pendingTx -> {
                     log.info("Update account: {}", pendingTx.getAccount().getId());
-                    AccountEntity account = accountRepository.findByIdWithPessimisticLock(pendingTx.getAccount().getId())
+                    AccountEntity account = accountRepository.findByIbanWithPessimisticLock(pendingTx.getAccount().getIban())
                             .orElseThrow(() -> new RuntimeException("Account not found: " + pendingTx.getAccount().getId()));
                     BigDecimal amount = pendingTx.getAmount();
 

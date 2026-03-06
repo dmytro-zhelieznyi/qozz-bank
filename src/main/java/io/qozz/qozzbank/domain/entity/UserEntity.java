@@ -25,6 +25,9 @@ public class UserEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
+    @Column(name = "authId", nullable = false, updatable = false, unique = true)
+    private UUID authId;
+
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 
