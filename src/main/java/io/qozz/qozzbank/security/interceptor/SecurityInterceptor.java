@@ -1,5 +1,7 @@
 package io.qozz.qozzbank.security.interceptor;
 
+import io.qozz.qozzbank.domain.entity.UserEntity;
+import io.qozz.qozzbank.repository.UserRepository;
 import io.qozz.qozzbank.security.context.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,11 +12,14 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class SecurityInterceptor implements HandlerInterceptor {
+    private final UserRepository userRepository;
 
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
@@ -24,12 +29,11 @@ public class SecurityInterceptor implements HandlerInterceptor {
             Jwt jwt = jwtAuth.getToken();
 
             try {
-                UUID userId = UUID.fromString(jwt.getSubject());
-                String token = jwt.getTokenValue();
+                UUID authId = UUID.fromString(jwt.getSubject());
+                UserEntity user = userRepository.findByAuthId(authId).orElseThrow();
 
-                UserContext.setContext(token, userId);
+                UserContext.setContext(user);
             } catch (Exception e) {
-                // Логируем ошибку, если UUID внезапно не UUID
             }
         }
         return true;
