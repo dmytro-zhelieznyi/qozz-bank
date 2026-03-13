@@ -38,6 +38,12 @@ public class TransactionEntity {
     )
     private AccountEntity account;
 
+    @Column(name = "from_iban", nullable = true)
+    private String fromIban;
+
+    @Column(name = "to_iban", nullable = true)
+    private String toIban;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "related_card_id",

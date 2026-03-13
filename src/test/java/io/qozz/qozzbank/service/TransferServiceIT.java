@@ -10,7 +10,6 @@ import io.qozz.qozzbank.domain.enumeration.*;
 import io.qozz.qozzbank.repository.AccountRepository;
 import io.qozz.qozzbank.repository.TransactionRepository;
 import io.qozz.qozzbank.repository.UserRepository;
-import io.qozz.qozzbank.service.TransferService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,7 +51,7 @@ class TransferServiceIT {
     private static final UUID CORRELATION_ID = UUID.randomUUID();
 
     @Autowired
-    private TransferService transferService;
+    private TransactionService transferService;
 
     @Autowired
     private UserRepository userRepository;
@@ -95,7 +94,7 @@ class TransferServiceIT {
                 .amount(transferAmount)
                 .description("Just money transfer");
 
-        var result = transferService.createTransfer(CORRELATION_ID, null, transferRequest);
+        var result = transferService.createTransaction(CORRELATION_ID, null, transferRequest);
 
         await()
                 .atMost(2, TimeUnit.SECONDS)
@@ -221,7 +220,7 @@ class TransferServiceIT {
         executor.submit(() -> {
             try {
                 startGate.await();
-                transferService.createTransfer(UUID.randomUUID(), null,
+                transferService.createTransaction(UUID.randomUUID(), null,
                         new TransferRequest()
                                 .fromAccountId(from.getId())
                                 .toAccountId(to.getId())

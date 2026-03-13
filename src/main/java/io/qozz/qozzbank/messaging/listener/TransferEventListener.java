@@ -75,6 +75,8 @@ public class TransferEventListener {
                     TransactionEntity completedTx = TransactionEntity.builder()
                             .operationId(pendingTx.getOperationId())
                             .account(account)
+                            .fromIban(pendingTx.getFromIban())
+                            .toIban(pendingTx.getToIban())
                             .amount(amount)
                             .type(pendingTx.getType())
                             .status(TransactionStatus.COMPLETED)

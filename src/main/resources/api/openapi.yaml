@@ -1,37 +1,33 @@
 openapi: 3.1.1
-
 info:
   title: QozzBank API
   description: >
     Core Banking System API.
-    All endpoints except the root '/' require a valid JWT Bearer token from Supabase Auth.
+    All endpoints require a valid JWT Bearer token from Supabase Auth.
+    User identification is handled automatically server-side via the JWT context.
   version: 1.0.0
 
 servers:
   - url: http://localhost:8080
     description: Local development server
 
-# Global security: Applies Authorization header to all endpoints by default
 security:
-  - BearerAuth: []
+  - BearerAuth: [ ]
 
 tags:
-  - name: home
-    description: General service information
   - name: users
-    description: User profile management
+    description: Current user profile management
   - name: accounts
-    description: Bank account management
+    description: Bank account management and overview
   - name: transactions
-    description: Money transfers and financial transactions
+    description: Money transfers and historical records
 
 paths:
   /:
     get:
-      tags: [home]
-      security: []
-      summary: Get service summary
-      description: Returns basic metadata about the QozzBank service.
+      tags: [ home ]
+      security: [ ]
+      summary: Service Summary
       operationId: getHomeInfo
       responses:
         '200':
@@ -40,32 +36,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/HomeInfoResponse' }
 
-  /api/v1/users:
-    post:
-      tags: [users]
-      summary: Create new user
-      operationId: createUser
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/UserRequest' }
-      responses:
-        '201':
-          description: User created successfully
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/UserResponse' }
-        '400': { description: "Invalid input" }
-        '401': { $ref: '#/components/responses/UnauthorizedError' }
-
-  /api/v1/users/{id}:
+  /api/v1/users/me:
     get:
-      tags: [users]
-      summary: Get user by authId
-      operationId: getUserByAuthId
+      tags: [ users ]
+      summary: Get current user details
+      operationId: getUser
       parameters:
-        - $ref: '#/components/parameters/AuthIdPath'
+        - $ref: '#/components/parameters/CorrelationId'
       responses:
         '200':
           description: User found
@@ -73,13 +50,46 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/UserResponse' }
         '401': { $ref: '#/components/responses/UnauthorizedError' }
-        '404': { description: "User not found" }
+        '404': { description: "User record not found" }
+
+  /api/v1/users:
+    post:
+      tags: [ users ]
+      summary: Register new user
+      operationId: createUser
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserRequest' }
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
 
   /api/v1/accounts:
+    get:
+      tags: [ accounts ]
+      summary: List my accounts
+      operationId: getAccounts
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: List of accounts retrieved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountsResponse' }
     post:
-      tags: [accounts]
-      summary: Create new bank account
+      tags: [ accounts ]
+      summary: Open a new account
       operationId: createAccount
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
       requestBody:
         required: true
         content:
@@ -87,57 +97,47 @@ paths:
             schema: { $ref: '#/components/schemas/AccountRequest' }
       responses:
         '201':
-          description: Account created successfully
+          description: Account opened successfully
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AccountResponse' }
-        '400': { description: "Invalid input data" }
-        '401': { $ref: '#/components/responses/UnauthorizedError' }
-        '404': { description: "User not found" }
-
-  /api/v1/accounts/user/{id}:
-    get:
-      tags: [accounts]
-      summary: Get accounts by authId
-      operationId: getAccountsByAuthId
-      parameters:
-        - $ref: '#/components/parameters/AuthIdPath'
-      responses:
-        '200':
-          description: List of accounts retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items: { $ref: '#/components/schemas/AccountResponse' }
-        '401': { $ref: '#/components/responses/UnauthorizedError' }
-        '404': { description: "User not found" }
 
   /api/v1/accounts/{iban}:
     get:
-      tags: [accounts]
-      summary: Get account by IBAN
-      operationId: getAccountByIban
+      tags: [ accounts ]
+      summary: Get account details by IBAN
+      operationId: getAccount
       parameters:
+        - $ref: '#/components/parameters/CorrelationId'
         - $ref: '#/components/parameters/IbanPath'
       responses:
         '200':
-          description: Account found
+          description: Account data found
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AccountResponse' }
-        '401': { $ref: '#/components/responses/UnauthorizedError' }
-        '404':
-          description: Account not found
+        '404': { description: "Account not found" }
+
+  /api/v1/accounts/{iban}/transactions:
+    get:
+      tags: [ accounts ]
+      summary: Get transaction history for an account
+      operationId: getAccountTransactions
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/IbanPath'
+      responses:
+        '200':
+          description: List of transactions
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              schema: { $ref: '#/components/schemas/TransactionsResponse' }
 
-  /api/v1/transfers:
+  /api/v1/transactions:
     post:
-      tags: [transactions]
+      tags: [ transactions ]
       summary: Execute money transfer
-      operationId: createTransfer
+      operationId: createTransaction
       parameters:
         - $ref: '#/components/parameters/CorrelationId'
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -145,19 +145,13 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/TransferRequest' }
+            schema: { $ref: '#/components/schemas/AccountsTransactionRequest' }
       responses:
         '201':
           description: Transfer accepted
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/TransferResponse' }
-        '401': { $ref: '#/components/responses/UnauthorizedError' }
-        '409':
-          description: Conflict (Optimistic lock failure)
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              schema: { $ref: '#/components/schemas/TransactionResponse' }
         '422':
           description: Business validation failed
           content:
@@ -170,116 +164,133 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: >
-        Enter your JWT token in the format: Bearer <token>.
-        Example: "Bearer eyJhbGciOiJIUzI1Ni..."
 
   responses:
     UnauthorizedError:
-      description: Authentication failed. Missing or invalid Bearer token.
+      description: Authentication failed.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/ErrorResponse' }
 
   parameters:
-    AuthIdPath:
-      name: id
-      in: path
-      required: true
-      description: The UUID from Supabase Auth
-      schema: { type: string, format: uuid, example: "550e8400-e29b-41d4-a716-446655440000" }
-
     IbanPath:
       name: iban
       in: path
       required: true
-      description: The International Bank Account Number
-      schema: { type: string, example: "DE12345678901234567890" }
-
+      schema: { type: string, example: "USD12345678901234567890" }
     CorrelationId:
       name: X-Correlation-ID
       in: header
       required: true
-      description: Unique identifier for distributed tracing
-      schema: { type: string, format: uuid, example: "123e4567-e89b-12d3-a456-426614174000" }
-
+      schema: { type: string, format: uuid }
     IdempotencyKey:
       name: Idempotency-Key
       in: header
       required: true
-      description: Ensures idempotent processing of transfers
-      schema: { type: string, format: uuid, example: "9f8c7a6b-1234-4cde-9876-abcdef123456" }
+      schema: { type: string, format: uuid }
 
   schemas:
+    # --- WRAPPERS ---
+    UserResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/UserData' }
+
+    AccountsResponse:
+      type: object
+      properties:
+        accounts:
+          type: array
+          items: { $ref: '#/components/schemas/AccountData' }
+        totalCount: { type: integer, example: 2 }
+
+    AccountResponse:
+      type: object
+      properties:
+        account: { $ref: '#/components/schemas/AccountData' }
+
+    TransactionsResponse:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items: { $ref: '#/components/schemas/TransactionData' }
+        totalCount: { type: integer, example: 15 }
+
+    TransactionResponse:
+      type: object
+      properties:
+        transaction: { $ref: '#/components/schemas/TransactionData' }
+
+    # --- MODELS ---
     HomeInfoResponse:
       type: object
-      required: [message]
       properties:
         message: { type: string, example: "Welcome to QozzBank API" }
 
     UserRequest:
       type: object
-      required: [authId, firstName, lastName, email]
+      required: [ firstName, lastName, email ]
       properties:
-        authId: { type: string, format: uuid, description: "Supabase Auth ID" }
-        firstName: { type: string, example: "Darth" }
-        lastName: { type: string, example: "Vader" }
-        email: { type: string, format: email, example: "darth.vader@qozz.io" }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string, format: email }
 
-    UserResponse:
+    UserData:
       type: object
-      required: [authId, firstName, lastName, email, status, createdAt]
+      required: [ firstName, lastName, email, status, createdAt ]
       properties:
-        authId: { type: string, format: uuid }
         firstName: { type: string }
         lastName: { type: string }
         email: { type: string }
         status: { type: string, example: "ACTIVE" }
         createdAt: { type: string, format: date-time }
-        updatedAt: { type: string, format: date-time }
 
     AccountRequest:
       type: object
-      required: [authId, accountType, currency]
+      required: [ accountType, currency ]
       properties:
-        authId: { type: string, format: uuid }
-        accountType: { type: string, enum: [Checking, Savings, Deposit, Credit, Investment, Loan] }
-        currency: { type: string, minLength: 3, maxLength: 3, example: "USD" }
+        accountType: { type: string, enum: [ Checking, Savings, Deposit, Credit, Investment, Loan ] }
+        currency: { type: string, example: "USD" }
 
-    AccountResponse:
+    AccountData:
       type: object
-      required: [authId, iban, currency, balance, availableBalance, accountType, status, createdAt]
+      required: [ iban, currency, balance, availableBalance, accountType, status, createdAt ]
       properties:
-        authId: { type: string, format: uuid }
-        iban: { type: string, example: "DE12345678901234567890" }
-        currency: { type: string, example: "EUR" }
-        balance: { type: number, format: decimal, example: 1250.50 }
-        availableBalance: { type: number, format: decimal, example: 1200.00 }
+        iban: { type: string }
+        currency: { type: string }
+        balance: { type: number }
+        availableBalance: { type: number }
         accountType: { type: string }
         status: { type: string }
         createdAt: { type: string, format: date-time }
-        updatedAt: { type: string, format: date-time }
 
-    TransferRequest:
+    TransactionData:
       type: object
-      required: [fromIban, toIban, amount]
+      required: [ id, operationId, amount, type, status, createdAt ]
       properties:
-        fromIban: { type: string, example: "DE12345678901234567890" }
-        toIban: { type: string, example: "DE09876543210987654321" }
-        amount: { type: number, format: decimal, minimum: 0.01, example: 100.50 }
-        description: { type: string, maxLength: 255, example: "Dinner payment" }
-
-    TransferResponse:
-      type: object
-      required: [operationId, status, createdAt]
-      properties:
+        id: { type: string, format: uuid }
         operationId: { type: string, format: uuid }
-        status: { type: string, example: "PENDING" }
+        fromIban: { type: string, example: "USD1234567890..." }
+        toIban: { type: string, example: "EUR9876543210..." }
+        amount: { type: number }
+        type: { type: string, example: "DEBIT" }
+        status: { type: string, example: "COMPLETED" }
+        description: { type: string }
         createdAt: { type: string, format: date-time }
+
+    AccountsTransactionRequest:
+      type: object
+      required: [ fromIban, toIban, amount ]
+      properties:
+        fromIban: { type: string }
+        toIban: { type: string }
+        amount: { type: number, minimum: 0.01 }
+        description: { type: string, maxLength: 255 }
 
     ErrorResponse:
       type: object
-      required: [code, message, correlationId]
+      required: [ code, message, correlationId ]
       properties:
         code: { $ref: '#/components/schemas/ErrorCode' }
         message: { type: string, example: "Insufficient funds" }

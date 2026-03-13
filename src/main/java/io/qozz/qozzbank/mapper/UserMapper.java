@@ -5,8 +5,8 @@ import io.qozz.qozzbank.service.dto.user.UserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
+import org.openapitools.model.UserData;
 import org.openapitools.model.UserRequest;
-import org.openapitools.model.UserResponse;
 
 @Mapper(
         componentModel = "spring",
@@ -21,5 +21,5 @@ public interface UserMapper {
 
     UserDto toDto(UserEntity entity);
 
-    UserResponse toResponse(UserDto dto);
+    UserData toUserData(UserDto dto);
 }

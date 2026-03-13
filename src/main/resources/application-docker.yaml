@@ -1,6 +1,14 @@
 server:
   port: 8080
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /api/openapi.yaml
+    disable-swagger-default-url: true
+
 spring:
   application:
     name: QozzBank

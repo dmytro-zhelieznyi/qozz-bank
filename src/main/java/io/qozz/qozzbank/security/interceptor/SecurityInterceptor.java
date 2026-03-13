@@ -32,7 +32,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 UUID authId = UUID.fromString(jwt.getSubject());
                 UserEntity user = userRepository.findByAuthId(authId).orElseThrow();
 
-                UserContext.setContext(user);
+                UserContext.setContext(user, authId);
             } catch (Exception e) {
             }
         }

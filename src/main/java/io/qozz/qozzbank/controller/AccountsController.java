@@ -1,13 +1,17 @@
 package io.qozz.qozzbank.controller;
 
+import io.qozz.qozzbank.domain.entity.UserEntity;
 import io.qozz.qozzbank.mapper.AccountMapper;
+import io.qozz.qozzbank.mapper.TransactionMapper;
+import io.qozz.qozzbank.security.context.UserContext;
 import io.qozz.qozzbank.service.AccountService;
+import io.qozz.qozzbank.service.TransactionService;
 import io.qozz.qozzbank.service.dto.account.AccountDto;
+import io.qozz.qozzbank.service.dto.transaction.TransactionDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.api.AccountsApi;
-import org.openapitools.model.AccountRequest;
-import org.openapitools.model.AccountResponse;
+import org.openapitools.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,46 +24,46 @@ import java.util.UUID;
 @Slf4j
 public class AccountsController implements AccountsApi {
     private final AccountService accountService;
+    private final TransactionService transactionService;
     private final AccountMapper accountMapper;
+    private final TransactionMapper transactionMapper;
 
     @Override
-    public ResponseEntity<List<AccountResponse>> getAccountsByAuthId(UUID id) {
-        log.info("[USER_ACCOUNTS_GET_START] AuthId: [{}]", id);
-
-        List<AccountDto> result = accountService.findUserAccountsById(id);
-
-        List<AccountResponse> response = result.stream()
-                .map(accountMapper::toResponse)
+    public ResponseEntity<AccountsResponse> getAccounts(UUID xCorrelationID) {
+        List<AccountDto> accountDtos = accountService.findUserAccounts();
+        List<AccountData> accountsData = accountDtos.stream()
+                .map(accountMapper::toAccountData)
                 .toList();
-
-        log.info("[USER_ACCOUNTS_GET_SUCCESS] AuthId: [{}]", id);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @Override
-    public ResponseEntity<AccountResponse> getAccountByIban(String iban) {
-        log.info("[ACCOUNT_GET_START] iban: [{}]", iban);
-
-        AccountDto result = accountService.findAccountByIban(iban);
-
-        AccountResponse response = accountMapper.toResponse(result);
-
-        log.info("[ACCOUNT_GET_SUCCESS] AuthId: [{}]", iban);
+        AccountsResponse response = new AccountsResponse().accounts(accountsData);
 
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<AccountResponse> createAccount(AccountRequest accountRequest) {
-        log.info("[ACCOUNT_CREATE_START] Creating account for AuthId: [{}] type: [{}]",
-                accountRequest.getAuthId(), accountRequest.getAccountType());
+    public ResponseEntity<AccountResponse> getAccount(UUID xCorrelationID, String iban) {
+        AccountDto accountDto = accountService.findAccountByIban(iban);
+        AccountData accountData = accountMapper.toAccountData(accountDto);
+        AccountResponse response = new AccountResponse().account(accountData);
 
-        AccountDto createdAccount = accountService.createAccount(accountRequest);
+        return ResponseEntity.ok(response);
+    }
 
-        AccountResponse response = accountMapper.toResponse(createdAccount);
+    @Override
+    public ResponseEntity<TransactionsResponse> getAccountTransactions(UUID xCorrelationID, String iban) {
+        List<TransactionDto> transactionDtos = transactionService.getAccountTransactions(iban);
+        List<TransactionData> transactionsData = transactionDtos.stream()
+                .map(transactionMapper::toTransactionData)
+                .toList();
+        TransactionsResponse response = new TransactionsResponse().transactions(transactionsData);
 
-        log.info("[ACCOUNT_CREATE_SUCCESS] Created IBAN: [{}]", response.getIban());
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<AccountResponse> createAccount(UUID xCorrelationID, AccountRequest accountRequest) {
+        AccountDto accountDto = accountService.createAccount(accountRequest);
+        AccountData accountData = accountMapper.toAccountData(accountDto);
+        AccountResponse response = new AccountResponse().account(accountData);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

@@ -8,4 +8,7 @@ import java.util.UUID;
 
 public interface TransactionRepository extends JpaRepository<TransactionEntity, UUID> {
     List<TransactionEntity> findByOperationId(UUID operationId);
+
+    List<TransactionEntity> findByAccountIban(String iban);
 }
+
